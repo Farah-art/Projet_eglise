@@ -7,29 +7,29 @@ public class Character : MonoBehaviour
     private bool monstreEtat = false;
     public Vector3 mouvement;
 
-    public float speed;
+    private float speed;
     private float saut;
     private float masse;
     private float gravity;
-    private float energie = 0;
-    public bool jumping = false;
-    private bool canTrans = true;
+    private Transform tete;
+    public LayerMask plafondMask;
+    private bool hitTete;
 
     public float speedF;
     public float sautF;
     public float masseF;
     public float gravityF;
+    public Transform teteF;
 
     public float speedM;
     public float sautM;
     public float masseM;
     public float gravityM;
+    public Transform teteM;
 
     private GameObject character;
     private CharacterController controller;
     public CameraFollow cam;
-    public RectTransform curseur;
-    private Vector2 xOffsetCurseur;
 
     public GameObject gbF;
     public GameObject gbM;
@@ -45,7 +45,6 @@ public class Character : MonoBehaviour
         fille = new float[4] { speedF, sautF, masseF, gravityF};
         monstre = new float[4] { speedM, sautM, masseM, gravityM };
         ChangeGB(gbF, 0, fille);
-        xOffsetCurseur = curseur.anchoredPosition;
     }
 
     // Update is called once per frame
@@ -68,21 +67,21 @@ public class Character : MonoBehaviour
         {
             ChangeGB(gbF, -0.6f, fille);
             monstreEtat = false;
-        }
-
-        if (jumping)
-        {
-            EndJump();
-        }
+        }        
 
         Rotate();
         Jump();
+        //hitTete = Physics.CheckSphere(tete, 0.4f, plafondMask);
+        //Debug.Log("teteF.position : " + (character.transform.position + teteF.TransformPoint(0,0,0)));
 
-        if(canTrans)
+        //Debug.DrawLine(tete, new Vector3(0, 0.4f, 0), Color.red, 2.5f);
+
+
+        if (hitTete)
         {
-            Energie();
-        }        
-                        
+            Debug.Log("Detection objet");
+        }
+        
         mouvement.y += gravity * Time.deltaTime;        
         controller.Move(mouvement * Time.deltaTime);
     }
@@ -93,6 +92,7 @@ public class Character : MonoBehaviour
     void ChangeGB(GameObject gb, float decalage, float[] stats)
     {
         Vector3 spawn;
+        //Debug.Log("Transformation");
 
         if (!character)
         {
@@ -112,26 +112,12 @@ public class Character : MonoBehaviour
         masse = stats[2];
         gravity = stats[3];
     }
-    
+
     void Jump()
     {
         if (Input.GetButtonDown("Jump") && controller.isGrounded)
         {
             mouvement.y = Mathf.Sqrt(saut * -2 * gravity);
-            jumping = true;
-        }
-    }
-
-    public void CancelJump()
-    {
-        mouvement.y = gravity * Time.deltaTime;
-    }
-
-    public void EndJump()
-    {
-        if(controller.isGrounded)
-        {
-            this.jumping = false;
         }
     }
 
@@ -148,13 +134,10 @@ public class Character : MonoBehaviour
             character.transform.Rotate(0, -180, 0);
         }
     }
+    
 
-    void Energie()
+    void DetectionTete()
     {
-        energie = Mathf.Sin(0.5f*Time.time + Mathf.PI/4);
-        Debug.Log("energie = " + energie);
-        Vector2 move = new Vector2(energie,0);
-        //curseur.transform.Translate(75 * move * Time.deltaTime);
-        curseur.anchoredPosition = xOffsetCurseur + 75*move;
+        
     }
 }
